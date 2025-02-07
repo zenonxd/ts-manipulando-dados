@@ -1,0 +1,22 @@
+thead {
+    padding: 40px;
+    tr {
+        font-size: 20px;
+
+
+        th {
+            padding: 20px 20px;
+
+        }
+    }
+}
+
+#tableBody {
+
+    td {
+        padding: 10px;
+        text-align: center;
+
+        font-size: 16px;
+    }
+}
