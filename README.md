@@ -135,4 +135,26 @@ Só criar um TR e TD e preencher.
 
 Para a estilização ver o final da aula 6.
 
-## Estatística (Total) - Aula7
+## Estatística 
+
+### Total - Aula7
+
+Poderíamos fazer com uma função, mas faremos excepcionalmente com uma classe.
+
+Podemos criar um module e uma classe, exportando-a logo no início.
+
+Dicas: 
+
+1. A interface está no escopo global e pode ser utilizada.
+2. Pode criar propriedades e atributos dentro da classe
+3. Lembrar de criar o construtor e passar os atributos dentro da função
+4. Lembrar de getters e setters dentro da classe
+5. Filtrar valor, utilizando filter, fazendo verificação de dado com predicate
+
+``toLocaleString("pt-BR", {style: "currency", currency: "BRL"});``, para arrumar o valor/decimal.
+
+### CountBy - Aula8
+
+Função para pegar o total de compras feitas em: cartão, boleto.
+
+Além disso, total de contas: pagas, recusadas, aguardamento pagamento, estornada e dias com mais vendas.
