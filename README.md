@@ -157,4 +157,8 @@ Dicas:
 
 Função para pegar o total de compras feitas em: cartão, boleto.
 
-Além disso, total de contas: pagas, recusadas, aguardamento pagamento, estornada e dias com mais vendas.
+Além disso, total de contas que foram: pagas, recusadas, aguardamento pagamento, estornada e dias com mais vendas.
+
+# Dicas Geral
+
+Usar TypePredicate dentro de filter!
