@@ -3,7 +3,7 @@ import dataStringToDate from "./stringDataToDate.ts";
 
 declare global {
 
-    type TipoPagamento = 'Cartão de Credito' | 'Boleto';
+    type TipoPagamento = 'Cartão de Crédito' | 'Boleto';
 
     type StatusPagamento =
         'Paga'

@@ -161,4 +161,140 @@ Além disso, total de contas que foram: pagas, recusadas, aguardamento pagamento
 
 # Dicas Geral
 
+## Tratando os dados da API
+
+Sempre tratar a API, verificando suas propriedades e redefinindo. Por exemplo:
+
+``"Forma de Pagamento": "Cartão de Crédito"``, não é uma boa declaração! O ideal seria: ``formaDePagamento: "Cartão de Crédito``.
+
+Para fazer esse tratamento, podemos:
+
+1. Criar um módulo para tratar os dados;
+2. Esse módulo, terá: uma interface da API inicial (como ela de fato está) e uma final, com os atributos devidamente
+formatados, vejamos:
+
+```ts
+    interface TransactionAPI {
+    Nome: string;
+    ID: number;
+    Data: string;
+    Email: string;
+    Status: StatusPagamento;
+    //note como acessamos a propriedade que está declarada errada no retorno da API
+    ['Forma de Pagamento']: TipoPagamento;
+    ['Valor (R$)']: string;
+    ['Cliente Novo']: number;
+}
+
+interface Transaction {
+    nome: string;
+    id: number;
+    data: Date;
+    status: StatusPagamento;
+    email: string;
+    moeda: string;
+    valor: number | null;
+    formaDePagamento: TipoPagamento;
+    clienteNovo: boolean;
+}
+```
+
+Assim, podemos criar dentro do módulo uma função (que vai receber a interface inicial -errada-), retornando a nova
+interface:
+
+Note como pegamos a propriedade da nova interface devidamente formatada ``formaDePagamento`` e acessamos a antiga com
+"[]".
+
+```ts
+export default function newInterface(transaction: TransactionAPI): Transaction {
+    return {
+        nome: transaction.Nome,
+        id: transaction.ID,
+        data: dataStringToDate(transaction.Data),
+        email: transaction.Email,
+        status: transaction.Status,
+        moeda: transaction["Valor (R$)"], // Assume currency is always 'R$'
+        valor: moedaToNumber(transaction["Valor (R$)"]),
+        formaDePagamento: transaction['Forma de Pagamento'],
+        clienteNovo: Boolean(transaction['Cliente Novo']), // Convert boolean to boolean 
+    }
+}
+```
+
+No tocante a dados como ``moeda`` e ``data``, também precisamos tratar. Podemos criar módulos separados, vejamos:
+
+### Tratando Data
+
+Podemos criar uma função que será exportada e receberá uma data em string, retornando date. Importamos um módulo NPM
+"parse", para realizar o tratamento da string para o formato desejado (no nosso caso, "dd/MM/yyyy").
+
+```ts
+import { parse } from 'date-fns';
+
+export default function dataStringToDate(data: string): Date {
+    const date = parse(data, 'dd/MM/yyyy HH:mm', new Date());
+
+    return date;
+}
+```
+
+### Tratando moeda
+
+Em alguns casos a moeda estará em String e no formato errado também de "." e ",".
+
+```ts
+export default function moedaToNumber(moeda: string): number | null {
+
+    const numero = Number(moeda.replace(".", "").replace(",", "."));
+
+    return isNaN(numero) ? null : numero;
+
+}
+```
+
+### Redeclarando propriedades
+
+Eventualmente se precisarmos redeclarar propriedade da Interface, não precisa criar uma nova, basta criar um type:
+
+Somente isso abaixo, basicamente cria uma nova interface de Transaction e frisa que a propriedade valor só pode ser number
+e não mais ``number | null``.
+
+```ts
+type TransactionValor = Transaction & { valor: number};
+```
+
+<hr>
+
 Usar TypePredicate dentro de filter!
+
+<hr>
+
+Para funções de consulta de dados (pegar por, exemplo, algo com um status específico), podemos usar o reduce,
+criando variáveis para serem acumuladas de acordo com o status.
+
+Na função abaixo, recebemos o Array de Transaction, e caso o status seja algo específico, acumulamos através
+das propriedades que criamos no fim do reduce (um objeto).
+
+```ts
+function consultData(transactions: Transaction[]) {
+
+    const counts = transactions.reduce(
+        (acc, item) => {
+            if (item.status === 'Paga') acc.paga +=1;
+            if (item.status === 'Estornada') acc.estornada +=1;
+            if (item.status === 'Aguardando pagamento') acc.aguardando +=1;
+            if (item.status === 'Recusada pela operadora de cartão') acc.recusada +=1;
+
+            return acc;
+
+        }, {paga: 0, estornada: 0, aguardando: 0, recusada: 0});
+
+    document.getElementById('pagas')!.textContent = `Transações pagas: ${counts.paga}`;
+    document.getElementById('estornadas')!.textContent = `Transações estornadas: ${counts.estornada}`;
+    document.getElementById('aguardando')!.textContent = `Transações aguardando pagamento: ${counts.aguardando}`;
+    document.getElementById('recusada')!.textContent = `Transações recusadas pela operadora de cartão: ${counts.recusada}`;
+}
+```
+
+<hr>
+

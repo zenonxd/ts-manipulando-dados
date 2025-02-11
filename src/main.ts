@@ -2,6 +2,7 @@ import {fetchData} from "./fetchData.ts";
 import newInterface from "./manipulandoDados.ts";
 import Estatisticas from "./estatisticas.ts";
 import StatusPagamento from "./manipulandoDados.ts"
+import {c} from "vite/dist/node/moduleRunnerTransport.d-CXw_Ws6P";
 
 
 
@@ -61,7 +62,7 @@ function fillStatistics(transactions: Transaction[]) {
     console.log(data.total);
 }
 
-function consultData(transactions: Transaction[]) {
+function consultStatus(transactions: Transaction[]) {
 
     const counts = transactions.reduce(
         (acc, item) => {
@@ -74,11 +75,63 @@ function consultData(transactions: Transaction[]) {
 
         }, {paga: 0, estornada: 0, aguardando: 0, recusada: 0});
 
+
+
     document.getElementById('pagas')!.textContent = `Transações pagas: ${counts.paga}`;
     document.getElementById('estornadas')!.textContent = `Transações estornadas: ${counts.estornada}`;
     document.getElementById('aguardando')!.textContent = `Transações aguardando pagamento: ${counts.aguardando}`;
     document.getElementById('recusada')!.textContent = `Transações recusadas pela operadora de cartão: ${counts.recusada}`;
+}
 
+function consultPayment(transactions: Transaction[]) {
+
+    const counts = transactions.reduce(
+        (acc, item) => {
+            if (item.formaDePagamento === 'Boleto') acc.boleto += 1;
+            if (item.formaDePagamento === 'Cartão de Crédito') acc.cartaoCredito += 1;
+
+            return acc;
+        }, {cartaoCredito: 0, boleto: 0})
+    document.getElementById('cc')!.textContent = `Cartão de Crédito: ${counts.cartaoCredito}`;
+    document.getElementById('boleto')!.textContent = `Boleto: ${counts.boleto}`;
+}
+
+function formatDate(date: Date): string {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+}
+
+
+function bestDaySales(transactions: Transaction[]) {
+
+    const salesByDay = transactions.reduce((acc, item) => {
+        const dateString = formatDate(item.data);
+
+        if (acc[dateString]) {
+            acc[dateString] += item.valor!;
+        } else {
+            acc[dateString] = item.valor!;
+        }
+
+        return acc;
+    }, {} as Record<string, number>);
+
+    let bestDay = '';
+    let maxSales = 0;
+
+    for (const date in salesByDay) {
+        if (salesByDay[date] > maxSales) {
+            maxSales = salesByDay[date];
+            bestDay = date;
+        }
+    }
+
+
+    document.getElementById('bestDay')!.textContent = `Melhor dia de venda: ${bestDay}
+    com vendas totais de ${maxSales.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}`;
+    
 }
 
 async function handleData() {
@@ -93,7 +146,10 @@ async function handleData() {
     fillTable(transactions);
     fillStatistics(transactions);
 
-    consultData(transactions);
+    consultStatus(transactions);
+    consultPayment(transactions);
+    
+    bestDaySales(transactions);
 
 }
 

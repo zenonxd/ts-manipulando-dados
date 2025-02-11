@@ -6,5 +6,4 @@ export default function moedaToNumber(moeda: string): number | null {
 
     return isNaN(numero) ? null : numero;
 
-
 }
